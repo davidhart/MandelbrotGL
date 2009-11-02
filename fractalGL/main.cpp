@@ -1,9 +1,10 @@
 #include <windows.h>
 #include <gl/gl.h>
 #include <gl/glu.h>
+#include <iostream>
 
 #define WNDCLASSNAME	"OpenGLWndClass"
-#define WINDOW_TITLE	"OpenGL Window"
+#define WINDOW_TITLE	"Can haz fractal?"
 #define WINDOW_HEIGHT	768
 #define WINDOW_WIDTH	1024
 #define WINDOW_STYLE	WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS
@@ -13,7 +14,7 @@ LRESULT	CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 bool InitWindow(HINSTANCE hInstance);
 void DeInitWindow();
 void Draw();
-void DrawMandelBrot();
+void GenMandelBrot();
 
 HWND appWindow;
 HDC hdc;
@@ -54,13 +55,24 @@ int WINAPI WinMain(
 	return 0;
 }
 
-void DrawMandelBrot()
+struct rgbcolour
 {
-	for (float x0 = -(double)WINDOW_WIDTH/WINDOW_HEIGHT; x0 < (double)WINDOW_WIDTH/WINDOW_HEIGHT; x0 += 2.0/WINDOW_HEIGHT*WINDOW_HEIGHT/WINDOW_WIDTH)
-	{
+	float r;
+	float g;
+	float b;
+};
 
-		for (float y0 = -1.0; y0 < 1.0; y0+= 2.0/WINDOW_HEIGHT)
+rgbcolour points[WINDOW_WIDTH][WINDOW_HEIGHT];
+
+void GenMandelBrot()
+{
+	for (int xint = 0; xint < WINDOW_WIDTH; xint++)
+	{
+		float x0 = (float)(xint-WINDOW_WIDTH/2) *2.0f/WINDOW_HEIGHT * (float)WINDOW_HEIGHT/WINDOW_WIDTH;
+
+		for (int yint = 0; yint < WINDOW_HEIGHT; yint++)
 		{
+			float y0 = (float)(yint-WINDOW_HEIGHT/2.0f) * 2.0f/WINDOW_HEIGHT;
 			float x = 0;
 			float y = 0;
 
@@ -76,20 +88,31 @@ void DrawMandelBrot()
 
 				iteration++;
 			}
- 
-			float r = 0;
-			if ( iteration != max_iteration )
+
+			points[xint][yint].g = 0.0f;
+			points[xint][yint].b = 0.0f;
+
+			if ( iteration == max_iteration )
 			{
-				r = (float)iteration/(float)max_iteration;
-				glColor3f(r, 0.0f, 0.0f);
+				points[xint][yint].r = 0.0f;
+
 			}
 			else
 			{
-				glColor3f(0.0f, 0.0f, 0.0f);
+				points[xint][yint].r = ((float)iteration/(float)max_iteration);
 			}
+		}
+	}
+}
 
-
-			glVertex2f(x0, y0);
+void DrawPointsSet()
+{
+	for (int x = 0; x < WINDOW_WIDTH; x++)
+	{
+		for (int y = 0; y < WINDOW_HEIGHT; y++)
+		{
+			glColor3f(points[x][y].r,points[x][y].g, points[x][y].b);
+			glVertex2i(x, y);
 		}
 	}
 }
@@ -98,26 +121,12 @@ void Draw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
-
-	
-
 	
 	glBegin(GL_POINTS);
 
-	DrawMandelBrot();
+	DrawPointsSet();
 
 	glEnd();
-
-	/*
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glBegin(GL_TRIANGLES);
-	glVertex2f(0, 0);
-	glVertex2f(0, 1);
-	glVertex2f(1, 0);
-
-	glEnd();
-	*/
-	
 
 	SwapBuffers(hdc);
 }
@@ -234,7 +243,8 @@ bool InitWindow(HINSTANCE hInstance)
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D((double)WINDOW_WIDTH/WINDOW_HEIGHT, (double)WINDOW_WIDTH/WINDOW_HEIGHT, -1.0, 1.0);
+	//gluOrtho2D((double)WINDOW_WIDTH/WINDOW_HEIGHT, (double)WINDOW_WIDTH/WINDOW_HEIGHT, -1.0, 1.0);
+	gluOrtho2D(0.0, (double)WINDOW_WIDTH, (double)WINDOW_HEIGHT, 0.0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -243,6 +253,8 @@ bool InitWindow(HINSTANCE hInstance)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	GenMandelBrot();
 
 	return true;
 }

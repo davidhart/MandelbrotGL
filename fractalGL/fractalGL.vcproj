@@ -59,6 +59,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="Opengl32.lib Glu32.lib"
 				GenerateDebugInformation="true"
+				SubSystem="0"
 				TargetMachine="1"
 			/>
 			<Tool
