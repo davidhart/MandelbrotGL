@@ -2,6 +2,7 @@
 #include <gl/gl.h>
 #include <gl/glu.h>
 #include <iostream>
+#include <sstream>
 
 #define WNDCLASSNAME	"OpenGLWndClass"
 #define WINDOW_TITLE	"Can haz fractal?"
@@ -15,10 +16,24 @@ bool InitWindow(HINSTANCE hInstance);
 void DeInitWindow();
 void Draw();
 void GenMandelBrot();
+void GenWindowTitle();
 
 HWND appWindow;
 HDC hdc;
 HGLRC hrc;
+
+float zoom;
+float positionX;
+float positionY;
+int iterations;
+
+void GenWindowTitle()
+{
+	std::stringstream str;
+	str << "Fractal, Zoom: " << zoom << ", Position: (" << positionX << "," << positionY << "), Iterations: " << iterations;
+	SetWindowText(appWindow, str.str().c_str());
+
+}
 
 int WINAPI WinMain(      
     HINSTANCE hInstance,
@@ -68,18 +83,17 @@ void GenMandelBrot()
 {
 	for (int xint = 0; xint < WINDOW_WIDTH; xint++)
 	{
-		float x0 = (float)(xint-WINDOW_WIDTH/2) *2.0f/WINDOW_HEIGHT * (float)WINDOW_HEIGHT/WINDOW_WIDTH;
+		float x0 = (float)(xint-WINDOW_WIDTH/2) *2.0f/WINDOW_HEIGHT * (float)WINDOW_HEIGHT/WINDOW_WIDTH * zoom + positionX;
 
 		for (int yint = 0; yint < WINDOW_HEIGHT; yint++)
 		{
-			float y0 = (float)(yint-WINDOW_HEIGHT/2.0f) * 2.0f/WINDOW_HEIGHT;
+			float y0 = (float)(yint-WINDOW_HEIGHT/2.0f) * 2.0f/WINDOW_HEIGHT * zoom + positionY;
 			float x = 0;
 			float y = 0;
 
 			int iteration = 0;
-			int max_iteration = 100;
  
-			while ( x*x + y*y <= (2*2)  &&  iteration < max_iteration ) 
+			while ( x*x + y*y <= (2*2)  &&  iteration < iterations ) 
 			{
 				float xtemp = x*x - y*y + x0;
 				y = 2*x*y + y0;
@@ -92,17 +106,18 @@ void GenMandelBrot()
 			points[xint][yint].g = 0.0f;
 			points[xint][yint].b = 0.0f;
 
-			if ( iteration == max_iteration )
+			if ( iteration == iterations )
 			{
-				points[xint][yint].r = 0.0f;
+				points[xint][yint].r = 1.0f;
 
 			}
 			else
 			{
-				points[xint][yint].r = ((float)iteration/(float)max_iteration);
+				points[xint][yint].r = ((float)iteration/(float)iterations);
 			}
 		}
 	}
+	GenWindowTitle();
 }
 
 void DrawPointsSet()
@@ -254,8 +269,12 @@ bool InitWindow(HINSTANCE hInstance)
 
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-	GenMandelBrot();
+	zoom = 1.0f;
+	positionX = 0.0f;
+	positionX = 0.0f;
+	iterations = 100;
 
+	GenMandelBrot();
 	return true;
 }
 
@@ -287,6 +306,42 @@ LRESULT CALLBACK WndProc(	HWND	hWnd,
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
+
+	case WM_KEYDOWN:
+		if (lParam & 0x00000001)
+		{
+			if (wParam == VK_ADD)
+			{
+				zoom -= 0.25f*zoom;
+				GenMandelBrot();
+			}
+			else if (wParam == VK_SUBTRACT)
+			{
+				zoom += 0.33333333333f*zoom;
+				GenMandelBrot();
+			}
+			else if (wParam == VK_UP)
+			{
+				positionY -= 0.25f * zoom;
+				GenMandelBrot();
+			}
+			else if (wParam == VK_DOWN)
+			{
+				positionY += 0.25f * zoom;
+				GenMandelBrot();
+			}
+			else if (wParam == VK_LEFT)
+			{
+				positionX -= 0.25f * zoom;
+				GenMandelBrot();
+			}
+			else if (wParam == VK_RIGHT)
+			{
+				positionX += 0.25f * zoom;
+				GenMandelBrot();
+			}
+		}
+		break;
 
 	}
 
