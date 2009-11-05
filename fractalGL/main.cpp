@@ -114,6 +114,7 @@ void GenMandelBrot()
 			else
 			{
 				points[xint][yint].r = ((float)iteration/(float)iterations);
+				points[xint][yint].r *= 2;
 			}
 		}
 	}
@@ -269,10 +270,16 @@ bool InitWindow(HINSTANCE hInstance)
 
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+	/*
 	zoom = 1.0f;
 	positionX = 0.0f;
-	positionX = 0.0f;
+	positionY = 0.0f;
 	iterations = 100;
+	*/
+	zoom = 0.00563771f;
+	positionX = -0.0268201f;
+	positionY = -0.695195f;
+	iterations = 1000;
 
 	GenMandelBrot();
 	return true;
@@ -338,6 +345,16 @@ LRESULT CALLBACK WndProc(	HWND	hWnd,
 			else if (wParam == VK_RIGHT)
 			{
 				positionX += 0.25f * zoom;
+				GenMandelBrot();
+			}
+			else if (wParam == 0x31)
+			{
+				iterations = 100;
+				GenMandelBrot();
+			}
+			else if (wParam == 0x32)
+			{
+				iterations = 1000;
 				GenMandelBrot();
 			}
 		}
