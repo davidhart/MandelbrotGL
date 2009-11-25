@@ -32,7 +32,6 @@ void GenWindowTitle()
 	std::stringstream str;
 	str << "Fractal, Zoom: " << zoom << ", Position: (" << positionX << "," << positionY << "), Iterations: " << iterations;
 	SetWindowText(appWindow, str.str().c_str());
-
 }
 
 int WINAPI WinMain(      
